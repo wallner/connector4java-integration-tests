@@ -63,11 +63,12 @@ import static org.junit.Assert.*;
 @DatabaseTearDown(value = "/database_tear_down.xml", type = DatabaseOperation.DELETE_ALL)
 public class SearchUserServiceIT extends AbstractIntegrationTestBase {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private static final int ITEMS_PER_PAGE = 3;
     private static final int START_INDEX_SECOND_PAGE = 4;
+    private static final String HASHED_PASSWORD = "cbae73fac0893291c4792ef19d158a589402288b35cb18fb8406e951b9d95f6b8b06a3526ffebe96ae0d91c04ae615a7fe2af362763db386ccbf3b55c29ae800";
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
     private SCIMSearchResult<User> queryResult;
 
     @Before
@@ -299,16 +300,20 @@ public class SearchUserServiceIT extends AbstractIntegrationTestBase {
         }
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     @DatabaseSetup("/database_seeds/SearchUserServiceIT/database_seed.xml")
-    public void search_for_user_by_password_with_query_string_fails() {
-        Query query = new QueryBuilder().filter("password eq \"irrelevant\"").build();
+    public void search_for_user_by_Password_with_query_string_fails() {
+        thrown.expect(BadRequestException.class);
+
+        Query query = new QueryBuilder().filter("password eq \"" + HASHED_PASSWORD + "\"").build();
         OSIAM_CONNECTOR.searchUsers(query, accessToken);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     @DatabaseSetup("/database_seeds/SearchUserServiceIT/database_seed.xml")
     public void search_for_user_by_non_exisitng_field_with_query_string_fails() {
+        thrown.expect(BadRequestException.class);
+
         Query query = new QueryBuilder().filter(INVALID_STRING + " eq \"" + INVALID_STRING + "\"").build();
         OSIAM_CONNECTOR.searchUsers(query, accessToken);
     }
